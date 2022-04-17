@@ -8,7 +8,7 @@ interface TypeProps {
 
 export const Container = styled.View<TypeProps>`
   padding: 19px 23px;
-  padding-bottom: 43px;
+  padding-bottom: ${RFValue(43)}px;
   border-radius: 8px;
   margin-right: 16px;
 
@@ -52,7 +52,7 @@ export const Icon = styled(Feather)<TypeProps>`
 `;
 
 export const Footer = styled.View`
-  margin-top: 35px;
+  margin-top: ${RFValue(32)}px;
 `;
 
 export const Ammount = styled.Text<TypeProps>`
@@ -60,6 +60,7 @@ export const Ammount = styled.Text<TypeProps>`
   font-size: ${RFValue(32)}px;
   color: ${({ theme, type }) =>
     type === "total" ? theme.colors.shape : theme.colors.title};
+  line-height: ${RFValue(36)}px;
 `;
 
 export const LastTransaction = styled.Text<TypeProps>`
@@ -67,4 +68,5 @@ export const LastTransaction = styled.Text<TypeProps>`
   font-size: ${RFValue(12)}px;
   color: ${({ theme, type }) =>
     type === "total" ? theme.colors.shape : theme.colors.text};
+  line-height: ${RFValue(14)}px;
 `;
