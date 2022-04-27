@@ -103,3 +103,10 @@ export const TransactionList = styled(
   showsVerticalScrollIndicator: false,
   ItemSeparatorComponent: SeparatorComponent,
 })``;
+
+export const Loading = styled.ActivityIndicator.attrs(({ theme }) => ({
+  color: theme.colors.primary,
+  size: RFValue(50),
+}))`
+  flex: 1;
+`;

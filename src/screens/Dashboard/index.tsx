@@ -22,26 +22,54 @@ import {
   Transactions,
   TransactionTitle,
   TransactionList,
+  Loading,
 } from "./styles";
 
 export interface DataListProps extends TransactionProps {
   id: string;
 }
 
+interface HighlightProps {
+  amount: string;
+}
+
+interface HighlightData {
+  income: HighlightProps;
+  outcome: HighlightProps;
+  total: HighlightProps;
+}
+
 export function Dashboard() {
-  const [data, setData] = useState<DataListProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [transactions, setTransactions] = useState<DataListProps[]>([]);
+  const [highlightData, setHighlightData] = useState<HighlightData>(
+    {} as HighlightData
+  );
+
+  function formatCurrencyToPtBR(currency: Number) {
+    return currency.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
 
   async function loadTransactions() {
     const dataKey = "@gofinances:transactions";
     const data = await AsyncStorage.getItem(dataKey);
     const JSONData = data ? JSON.parse(data) : [];
 
+    let income = 0;
+    let outcome = 0;
+
     const formattedData: DataListProps[] = JSONData.map(
       (item: DataListProps) => {
-        const amount = Number(item.amount).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
+        if (item.type === "up") {
+          income += Number(item.amount);
+        } else {
+          outcome += Number(item.amount);
+        }
+
+        const amount = formatCurrencyToPtBR(Number(item.amount));
 
         const date = Intl.DateTimeFormat("pt-BR", {
           day: "2-digit",
@@ -60,7 +88,20 @@ export function Dashboard() {
       }
     );
 
-    setData(formattedData);
+    setTransactions(formattedData);
+    setHighlightData({
+      income: {
+        amount: formatCurrencyToPtBR(Number(income)),
+      },
+      outcome: {
+        amount: formatCurrencyToPtBR(Number(outcome)),
+      },
+      total: {
+        amount: formatCurrencyToPtBR(income - outcome),
+      },
+    });
+
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -72,6 +113,8 @@ export function Dashboard() {
       loadTransactions();
     }, [])
   );
+
+  if (isLoading) return <Loading />;
 
   return (
     <Container>
@@ -98,19 +141,19 @@ export function Dashboard() {
         <HighlightCard
           type="up"
           title="Entradas"
-          amount="R$ 17.400,00"
+          amount={highlightData.income.amount}
           lastTransaction="Última entrada dia 13 de abril"
         />
         <HighlightCard
           type="down"
           title="Saídas"
-          amount="R$ 1.259,00"
+          amount={highlightData.outcome.amount}
           lastTransaction="Última saída dia 03 de abril"
         />
         <HighlightCard
           type="total"
           title="Total"
-          amount="R$ 16.141,00"
+          amount={highlightData.total.amount}
           lastTransaction="01 à 16 de abril"
         />
       </HighlightCards>
@@ -119,7 +162,7 @@ export function Dashboard() {
         <TransactionTitle>Listagem</TransactionTitle>
 
         <TransactionList
-          data={data}
+          data={transactions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <TransactionCard data={item} />}
         />
