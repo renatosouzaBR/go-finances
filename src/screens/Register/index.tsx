@@ -48,7 +48,6 @@ export function Register() {
     name: "Categoria",
     icon: "any",
   });
-  const dataKey = "@gofinances:transactions";
 
   const {
     control,
@@ -81,12 +80,13 @@ export function Register() {
       id: String(uuid.v4()),
       name: form.name,
       amount: form.amount,
-      transactionType,
+      type: transactionType,
       category: category.key,
       date: new Date(),
     };
 
     try {
+      const dataKey = "@gofinances:transactions";
       const data = await AsyncStorage.getItem(dataKey);
       const currentData = data ? JSON.parse(data) : [];
       const formattedData = [...currentData, newTransaction];
