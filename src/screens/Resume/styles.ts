@@ -22,3 +22,16 @@ export const Title = styled.Text`
 
   margin-bottom: ${RFValue(18)}px;
 `;
+
+export const Content = styled.ScrollView.attrs({
+  contentContainerStyle: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+})``;
+
+export const ChartContainer = styled.View`
+  width: 100%;
+  align-items: center;
+`;

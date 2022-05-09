@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
+import { formatCurrencyToPtBR } from "../../utils/formatters";
 import { HighlightCard } from "../../components/HighlightCard";
 import {
   TransactionCard,
@@ -46,13 +47,6 @@ export function Dashboard() {
   const [highlightData, setHighlightData] = useState<HighlightData>(
     {} as HighlightData
   );
-
-  function formatCurrencyToPtBR(currency: Number) {
-    return currency.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
 
   function getLastDate(date: string, lastDate: number) {
     const time = new Date(date).getTime();
