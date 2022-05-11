@@ -27,7 +27,6 @@ export const Title = styled.Text`
 
 export const Content = styled.ScrollView.attrs({
   contentContainerStyle: {
-    flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
