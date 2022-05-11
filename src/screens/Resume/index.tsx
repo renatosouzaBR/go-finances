@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { VictoryPie } from "victory-native";
+import { RFValue } from "react-native-responsive-fontsize";
+import { format, addMonths, subMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { categories } from "../../utils/categories";
@@ -7,8 +11,17 @@ import { formatCurrencyToPtBR } from "../../utils/formatters";
 
 import { HistoryCard } from "../../components/HistoryCard";
 import { DataListProps } from "../Dashboard";
-import { Container, Header, Title, Content, ChartContainer } from "./styles";
-import { RFValue } from "react-native-responsive-fontsize";
+import {
+  Container,
+  Header,
+  Title,
+  Content,
+  ChartContainer,
+  MonthSelectContainer,
+  MonthSelectButton,
+  MonthSelectIcon,
+  Month,
+} from "./styles";
 
 interface HistoryProps {
   key: string;
@@ -20,6 +33,7 @@ interface HistoryProps {
 }
 
 export function Resume() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [outcomeHistory, setOutcomeHistory] = useState<HistoryProps[]>([]);
 
   async function loadTotalOutcome() {
@@ -28,7 +42,10 @@ export function Resume() {
     const formattedData = data ? (JSON.parse(data) as DataListProps[]) : [];
 
     const outcomes = formattedData.filter(
-      (item: DataListProps) => item.type === "down"
+      (item: DataListProps) =>
+        item.type === "down" &&
+        new Date(item.date).getMonth() === selectedDate.getMonth() &&
+        new Date(item.date).getFullYear() === selectedDate.getFullYear()
     );
 
     const outcomeTotal = outcomes.reduce(
@@ -66,9 +83,19 @@ export function Resume() {
     setOutcomeHistory(totalBycategory);
   }
 
-  useEffect(() => {
-    loadTotalOutcome();
-  }, []);
+  function handleDateChange(type: "next" | "previous") {
+    if (type === "next") {
+      setSelectedDate(addMonths(selectedDate, 1));
+    } else {
+      setSelectedDate(subMonths(selectedDate, 1));
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTotalOutcome();
+    }, [selectedDate])
+  );
 
   return (
     <Container>
@@ -77,6 +104,18 @@ export function Resume() {
       </Header>
 
       <Content>
+        <MonthSelectContainer>
+          <MonthSelectButton onPress={() => handleDateChange("previous")}>
+            <MonthSelectIcon name="chevron-left" />
+          </MonthSelectButton>
+
+          <Month>{format(selectedDate, "MMMM, yyyy", { locale: ptBR })}</Month>
+
+          <MonthSelectButton onPress={() => handleDateChange("next")}>
+            <MonthSelectIcon name="chevron-right" />
+          </MonthSelectButton>
+        </MonthSelectContainer>
+
         <ChartContainer>
           <VictoryPie
             data={outcomeHistory}
