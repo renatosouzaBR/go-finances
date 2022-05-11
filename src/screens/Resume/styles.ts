@@ -59,3 +59,10 @@ export const Month = styled.Text`
   font-size: ${RFValue(20)}px;
   color: ${({ theme }) => theme.colors.title};
 `;
+
+export const Loading = styled.ActivityIndicator.attrs(({ theme }) => ({
+  color: theme.colors.primary,
+  size: RFValue(50),
+}))`
+  flex: 1;
+`;

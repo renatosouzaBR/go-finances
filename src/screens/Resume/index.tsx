@@ -21,6 +21,7 @@ import {
   MonthSelectButton,
   MonthSelectIcon,
   Month,
+  Loading,
 } from "./styles";
 
 interface HistoryProps {
@@ -33,54 +34,60 @@ interface HistoryProps {
 }
 
 export function Resume() {
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [outcomeHistory, setOutcomeHistory] = useState<HistoryProps[]>([]);
 
   async function loadTotalOutcome() {
-    const dataKey = "@gofinances:transactions";
-    const data = await AsyncStorage.getItem(dataKey);
-    const formattedData = data ? (JSON.parse(data) as DataListProps[]) : [];
+    try {
+      setIsLoading(true);
+      const dataKey = "@gofinances:transactions";
+      const data = await AsyncStorage.getItem(dataKey);
+      const formattedData = data ? (JSON.parse(data) as DataListProps[]) : [];
 
-    const outcomes = formattedData.filter(
-      (item: DataListProps) =>
-        item.type === "down" &&
-        new Date(item.date).getMonth() === selectedDate.getMonth() &&
-        new Date(item.date).getFullYear() === selectedDate.getFullYear()
-    );
+      const outcomes = formattedData.filter(
+        (item: DataListProps) =>
+          item.type === "down" &&
+          new Date(item.date).getMonth() === selectedDate.getMonth() &&
+          new Date(item.date).getFullYear() === selectedDate.getFullYear()
+      );
 
-    const outcomeTotal = outcomes.reduce(
-      (acumullator: number, outcome: DataListProps) => {
-        return acumullator + Number(outcome.amount);
-      },
-      0
-    );
+      const outcomeTotal = outcomes.reduce(
+        (acumullator: number, outcome: DataListProps) => {
+          return acumullator + Number(outcome.amount);
+        },
+        0
+      );
 
-    const totalBycategory: HistoryProps[] = [];
+      const totalBycategory: HistoryProps[] = [];
 
-    categories.forEach((category) => {
-      let categorySum = 0;
+      categories.forEach((category) => {
+        let categorySum = 0;
 
-      outcomes.forEach((item: DataListProps) => {
-        if (item.category === category.key) {
-          categorySum += Number(item.amount);
+        outcomes.forEach((item: DataListProps) => {
+          if (item.category === category.key) {
+            categorySum += Number(item.amount);
+          }
+        });
+
+        if (categorySum > 0) {
+          const percent = `${((categorySum / outcomeTotal) * 100).toFixed(0)}%`;
+
+          totalBycategory.push({
+            key: category.key,
+            name: category.name,
+            amount: categorySum,
+            formattedAmount: formatCurrencyToPtBR(categorySum),
+            color: category.color,
+            percent,
+          });
         }
       });
 
-      if (categorySum > 0) {
-        const percent = `${((categorySum / outcomeTotal) * 100).toFixed(0)}%`;
-
-        totalBycategory.push({
-          key: category.key,
-          name: category.name,
-          amount: categorySum,
-          formattedAmount: formatCurrencyToPtBR(categorySum),
-          color: category.color,
-          percent,
-        });
-      }
-    });
-
-    setOutcomeHistory(totalBycategory);
+      setOutcomeHistory(totalBycategory);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleDateChange(type: "next" | "previous") {
@@ -103,45 +110,51 @@ export function Resume() {
         <Title>Resumo por categoria</Title>
       </Header>
 
-      <Content>
-        <MonthSelectContainer>
-          <MonthSelectButton onPress={() => handleDateChange("previous")}>
-            <MonthSelectIcon name="chevron-left" />
-          </MonthSelectButton>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <Content>
+          <MonthSelectContainer>
+            <MonthSelectButton onPress={() => handleDateChange("previous")}>
+              <MonthSelectIcon name="chevron-left" />
+            </MonthSelectButton>
 
-          <Month>{format(selectedDate, "MMMM, yyyy", { locale: ptBR })}</Month>
+            <Month>
+              {format(selectedDate, "MMMM, yyyy", { locale: ptBR })}
+            </Month>
 
-          <MonthSelectButton onPress={() => handleDateChange("next")}>
-            <MonthSelectIcon name="chevron-right" />
-          </MonthSelectButton>
-        </MonthSelectContainer>
+            <MonthSelectButton onPress={() => handleDateChange("next")}>
+              <MonthSelectIcon name="chevron-right" />
+            </MonthSelectButton>
+          </MonthSelectContainer>
 
-        <ChartContainer>
-          <VictoryPie
-            data={outcomeHistory}
-            x="percent"
-            y="amount"
-            colorScale={outcomeHistory.map((outcome) => outcome.color)}
-            style={{
-              labels: {
-                fontSize: RFValue(18),
-                fontWeight: "bold",
-                fill: "#FFFFFF",
-              },
-            }}
-            labelRadius={50}
-          />
-        </ChartContainer>
+          <ChartContainer>
+            <VictoryPie
+              data={outcomeHistory}
+              x="percent"
+              y="amount"
+              colorScale={outcomeHistory.map((outcome) => outcome.color)}
+              style={{
+                labels: {
+                  fontSize: RFValue(18),
+                  fontWeight: "bold",
+                  fill: "#FFFFFF",
+                },
+              }}
+              labelRadius={50}
+            />
+          </ChartContainer>
 
-        {outcomeHistory.map((item) => (
-          <HistoryCard
-            key={item.key}
-            title={item.name}
-            amount={item.formattedAmount}
-            color={item.color}
-          />
-        ))}
-      </Content>
+          {outcomeHistory.map((item) => (
+            <HistoryCard
+              key={item.key}
+              title={item.name}
+              amount={item.formattedAmount}
+              color={item.color}
+            />
+          ))}
+        </Content>
+      )}
     </Container>
   );
 }
