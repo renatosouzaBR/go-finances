@@ -21,8 +21,10 @@ type User = {
 
 interface AuthContextProps {
   user: User;
+  userStoragedLoading: boolean;
   signInWithGoogle(): Promise<void>;
   signInWithApple(): Promise<void>;
+  signOut(): void;
 }
 
 interface GoogleAuthProps {
@@ -40,6 +42,7 @@ interface AuthProviderProps {
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
+  const [userStoragedLoading, setUserStoragedLoading] = useState(true);
   const userStoragedKey = "@gofinances:user";
 
   async function signInWithGoogle() {
@@ -83,11 +86,12 @@ function AuthProvider({ children }: AuthProviderProps) {
         ],
       });
 
+      const name = credential.fullName?.givenName!;
       const userLogged = {
         id: credential.user,
-        name: credential.fullName?.givenName!,
+        name,
         email: credential.email!,
-        photo: undefined,
+        photo: `https://ui-avatars.com/api/?name=${name}&length=1`,
       };
 
       setUser(userLogged);
@@ -104,6 +108,13 @@ function AuthProvider({ children }: AuthProviderProps) {
       const userLogged = JSON.parse(userStoraged) as User;
       setUser(userLogged);
     }
+
+    setUserStoragedLoading(false);
+  }
+
+  async function signOut() {
+    setUser({} as User);
+    await AsyncStorage.removeItem(userStoragedKey);
   }
 
   useEffect(() => {
@@ -111,7 +122,15 @@ function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, signInWithApple }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        userStoragedLoading,
+        signInWithGoogle,
+        signInWithApple,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

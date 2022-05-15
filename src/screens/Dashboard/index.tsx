@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { useAuth } from "../../hooks/auth";
 import { formatCurrencyToPtBR } from "../../utils/formatters";
 import { HighlightCard } from "../../components/HighlightCard";
 import {
@@ -17,6 +18,7 @@ import {
   UserGreetings,
   Greeting,
   UserName,
+  ExitButton,
   ExitIcon,
   UserWrapper,
   HighlightCards,
@@ -47,6 +49,8 @@ export function Dashboard() {
   const [highlightData, setHighlightData] = useState<HighlightData>(
     {} as HighlightData
   );
+
+  const { user, signOut } = useAuth();
 
   function getLastDate(date: string, lastDate: number) {
     const time = new Date(date).getTime();
@@ -136,17 +140,19 @@ export function Dashboard() {
           <UserProfile>
             <UserPhoto
               source={{
-                uri: "https://avatars.githubusercontent.com/u/28769727?v=4",
+                uri: user.photo,
               }}
             />
 
             <UserGreetings>
               <Greeting>Olá,</Greeting>
-              <UserName>Renato</UserName>
+              <UserName>{user.name}</UserName>
             </UserGreetings>
           </UserProfile>
 
-          <ExitIcon name="power" />
+          <ExitButton onPress={signOut}>
+            <ExitIcon name="power" />
+          </ExitButton>
         </UserWrapper>
       </Header>
 
