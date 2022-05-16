@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { categories } from "../../utils/categories";
 import { formatCurrencyToPtBR } from "../../utils/formatters";
+import { useAuth } from "../../hooks/auth";
 
 import { HistoryCard } from "../../components/HistoryCard";
 import { DataListProps } from "../Dashboard";
@@ -38,10 +39,12 @@ export function Resume() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [outcomeHistory, setOutcomeHistory] = useState<HistoryProps[]>([]);
 
+  const { user } = useAuth();
+
   async function loadTotalOutcome() {
     try {
       setIsLoading(true);
-      const dataKey = "@gofinances:transactions";
+      const dataKey = `@gofinances:transactions_user${user.id}`;
       const data = await AsyncStorage.getItem(dataKey);
       const formattedData = data ? (JSON.parse(data) as DataListProps[]) : [];
 

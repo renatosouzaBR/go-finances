@@ -64,7 +64,7 @@ export function Dashboard() {
   }
 
   async function loadTransactions() {
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_user${user.id}`;
     const data = await AsyncStorage.getItem(dataKey);
     const JSONData = data ? JSON.parse(data) : [];
 
@@ -106,11 +106,17 @@ export function Dashboard() {
     setHighlightData({
       income: {
         amount: formatCurrencyToPtBR(Number(income)),
-        lastTransaction: formatLongDate(new Date(lastIncome)),
+        lastTransaction:
+          lastIncome > 0
+            ? `Última entrada dia ${formatLongDate(new Date(lastIncome))}`
+            : "Não há registros de entradas",
       },
       outcome: {
         amount: formatCurrencyToPtBR(Number(outcome)),
-        lastTransaction: formatLongDate(new Date(lastOutcome)),
+        lastTransaction:
+          lastOutcome > 0
+            ? `Última saída dia ${formatLongDate(new Date(lastOutcome))}`
+            : "Não há registros de saídas",
       },
       total: {
         amount: formatCurrencyToPtBR(income - outcome),
@@ -161,13 +167,13 @@ export function Dashboard() {
           type="up"
           title="Entradas"
           amount={highlightData.income.amount}
-          lastTransaction={`Última entrada dia ${highlightData.income.lastTransaction}`}
+          lastTransaction={highlightData.income.lastTransaction}
         />
         <HighlightCard
           type="down"
           title="Saídas"
           amount={highlightData.outcome.amount}
-          lastTransaction={`Última saída dia ${highlightData.outcome.lastTransaction}`}
+          lastTransaction={highlightData.outcome.lastTransaction}
         />
         <HighlightCard
           type="total"
