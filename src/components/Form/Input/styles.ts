@@ -1,7 +1,11 @@
+import styled, { css } from "styled-components/native";
 import { RFValue } from "react-native-responsive-fontsize";
-import styled from "styled-components/native";
 
-export const Container = styled.TextInput`
+interface Props {
+  active: boolean;
+}
+
+export const Container = styled.TextInput<Props>`
   width: 100%;
   height: ${RFValue(56)}px;
   border-radius: 5px;
@@ -13,4 +17,11 @@ export const Container = styled.TextInput`
   font-family: ${({ theme }) => theme.fonts.regular};
   font-size: ${RFValue(14)}px;
   color: ${({ theme }) => theme.colors.text};
+
+  ${({ theme, active }) =>
+    active &&
+    css`
+      border-bottom-width: 3px;
+      border-bottom-color: ${theme.colors.attention};
+    `}
 `;
