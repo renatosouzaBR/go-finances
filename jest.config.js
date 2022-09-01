@@ -5,4 +5,6 @@ module.exports = {
     "@testing-library/jest-native/extend-expect",
     "jest-styled-components",
   ],
+  collectCoverageFrom: ["src/**/*.tsx", "!src/**/*.spec.tsx"],
+  coverageReporters: ["lcov"],
 };
