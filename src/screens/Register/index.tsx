@@ -69,7 +69,9 @@ export function Register() {
   }
 
   function handleOpenCategorySelect() {
-    setCategorySelectOpen(true);
+    setTimeout(() => {
+      setCategorySelectOpen(true);
+    }, 1000);
   }
 
   async function handleRegister(form: FormData) {
